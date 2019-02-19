@@ -19,27 +19,22 @@ const SongType = new GraphQLObjectType({
 		id: { type: GraphQLID },
 		name: { type: GraphQLString },
 		length: { type: GraphQLString },
-		author: {
-			type: AuthorType,
-			resolve: (parent, args) => Author.findById(parent.authorId)
-		},
-		album: {
-			type: AlbumType,
-			resolve: (parent, args) => Album.findById(parent.songId)
-		}
+		author: { type: AuthorType, resolve: (parent, args) => Author.findById(parent.authorId) },
+		album: { type: AlbumType, resolve: (parent, args) => Album.findById(parent.albumId) }
 	})
 });
+
 const AlbumType = new GraphQLObjectType({
 	name: 'AlbumType',
 	fields: () => ({
 		id: { type: GraphQLID },
 		name: { type: GraphQLString },
 		genre: { type: GraphQLString },
-		year: { type: GraphQLString },
-		author: { type: GraphQLString },
+		released: { type: GraphQLString },
+		author: { type: AuthorType, resolve: (parent, args) => Author.findById(parent.authorId) },
 		songs: {
 			type: GraphQLList(SongType),
-			resolve: (parent, args) => Song.find({ songId: parent.id })
+			resolve: (parent, args) => Song.find({ albumId: parent.id })
 		}
 	})
 });
@@ -102,7 +97,8 @@ const RootMutation = new GraphQLObjectType({
 			resolve: (parent, args) => {
 				let author = new Author({
 					name: args.name,
-					age: args.age
+					age: args.age,
+					birthplace: args.birthplace
 				});
 				return author.save();
 			}
@@ -111,12 +107,16 @@ const RootMutation = new GraphQLObjectType({
 			type: SongType,
 			args: {
 				name: { type: new GraphQLNonNull(GraphQLString) },
-				authorId: { type: new GraphQLNonNull(GraphQLID) }
+				length: { type: new GraphQLNonNull(GraphQLString) },
+				authorId: { type: new GraphQLNonNull(GraphQLID) },
+				albumId: { type: new GraphQLNonNull(GraphQLID) }
 			},
 			resolve: (parent, args) => {
 				let song = new Song({
 					name: args.name,
-					authorId: args.authorId
+					length: args.length,
+					authorId: args.authorId,
+					albumId: args.albumId
 				});
 				return song.save();
 			}
@@ -126,14 +126,14 @@ const RootMutation = new GraphQLObjectType({
 			args: {
 				name: { type: new GraphQLNonNull(GraphQLString) },
 				genre: { type: new GraphQLNonNull(GraphQLString) },
-				year: { type: new GraphQLNonNull(GraphQLString) },
+				released: { type: new GraphQLNonNull(GraphQLString) },
 				authorId: { type: new GraphQLNonNull(GraphQLID) }
 			},
 			resolve: (parent, args) => {
 				let album = new Album({
 					name: args.name,
 					genre: args.genre,
-					year: args.year,
+					released: args.released,
 					authorId: args.authorId
 				});
 				return album.save();
