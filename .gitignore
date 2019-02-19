@@ -1,0 +1,7 @@
+.vccode
+node_modules
+yarn.error.log
+yarn.lock
+.env
+serviceAccount.json
+TODO.txt
